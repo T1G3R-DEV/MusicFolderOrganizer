@@ -61,19 +61,31 @@ def strip_subfolders():
             file_path = os.path.join(root, file)
             # Move files to the most outer folder
             new_path = os.path.join(input_path, file)
-            os.replace(file_path, new_path)
-            log_output.insert(tk.END, f"Moving File '{file_path}' to '{new_path}' ...\n")
+            # Rename .jpg files if they already exist
+            count = 1
+            while os.path.exists(new_path):
+                file_name, file_ext = os.path.splitext(file)
+                new_path = os.path.join(input_path, f"{file_name}_{count}{file_ext}")
+                count += 1
+            try:
+                os.rename(file_path, new_path)
+                #log_output.insert(tk.END,f"Moved")
+            except Exception as e:
+                log_output.insert(tk.END,f"Error moving {file}: {e}")
+            #log_output.insert(tk.END, f"Moving File '{file_path}' to '{new_path}' ...\n")
 
     # Delete empty subfolders
     for root, dirs, files in os.walk(input_path, topdown=False):
         for folder in dirs:
             folder_path = os.path.join(root, folder)
-            try:
-                os.rmdir(folder_path)
-                log_output.insert(tk.END, f"Deleting Folder '{folder_path}' ...\n")
-            except OSError as e:
-                log_output.insert(tk.END, f"ERROR: '{e}' ...\n")
-
+            if not os.listdir(folder_path):
+                try:
+                    os.rmdir(folder_path)
+                    #log_output.insert(tk.END, f"Deleting Folder '{folder_path}' ...\n")
+                except OSError as e:
+                    log_output.insert(tk.END, f"ERROR: '{e}' ...\n")
+            else: 
+                log_output.insert(tk.END, f"ERROR: Folder not empty, try deleting it manually ...\n")
     log_output.insert(tk.END, f"Finished Moving files ...\n")
                 
 
@@ -110,10 +122,11 @@ def create_subfolders():
                 new_file_path = os.path.join(album_folder, f"{tag_title}{os.path.splitext(file)[1]}")
                 try:
                     os.rename(file_path, new_file_path)
-                    log_output.insert(tk.END,f"Moved {file} to {album_folder}")
+                    #log_output.insert(tk.END,f"Moved {file} to {album_folder}")
                 except Exception as e:
                     log_output.insert(tk.END,f"Error moving {file}: {e}")
-    
+            else: 
+                log_output.insert(tk.END,f"Error moving {file_path}: Tags not found")
     log_output.insert(tk.END, "\nSubfolders created successfully.\n")
 
 

@@ -178,7 +178,7 @@ def generate_thumbnails():
 
 # GUI creation
 root = tk.Tk()
-root.title("Folder Actions")
+root.title("MusicFolderOrganizer V 0.1.0")
 
 # Input folder
 input_folder_label = tk.Label(root, text="Selected Folder:")
@@ -213,5 +213,15 @@ generate_thumbnails_button.pack()
 # Log output
 log_output = tk.Text(root, height=20, width=100)
 log_output.pack()
+# Copyright notice
+copyright_notice = """
+MusicFolderOrganizer Versoin 0.1.0 - Developed by T1G3R.dev
+Copyright © 2023 Daniel M - T1G3R.dev 
+Contact: t1g3r.dev@gmail.com
+More Information: https://github.com/T1G3R-DEV/MusicFolderOrgernizer
+"""
+
+copyright_label = tk.Label(root, text=copyright_notice)
+copyright_label.pack()
 
 root.mainloop()

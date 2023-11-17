@@ -7,6 +7,9 @@ import shutil
 from mutagen.easyid3 import EasyID3
 from mutagen.flac import FLAC
 from mutagen.wavpack import WavPack
+from duckduckgo_images_api import search
+import urllib.request
+import requests
 
 def get_music_tags(file_path):
     tags = {}
@@ -32,20 +35,48 @@ def get_music_tags(file_path):
     except Exception as e:
         print(f"Error reading tags for {file_path}: {e}")
         return None
-    
-    
-
     return tags
+
+def googleImgDownload(query, output_directory, filename):
+    results = search(query, max_results=2)
+    #print([r['image'] for r in results["results"]])
+
+
+    url = results["results"][0]['image']
+    # Die URL in Teile zerlegen
+    # Den Teil der URL nehmen, der den Dateinamen enthält
+    split_url = url.split('?')[0]  # Ignoriere Parameter, falls vorhanden
+    split_parts = split_url.split('/')  # Teile die URL beim Schrägstrich auf
+
+    # Den letzten Teil der URL nehmen (enthält normalerweise den Dateinamen)
+    filename_with_extension = split_parts[-1]
+
+    # Die Dateiendung extrahieren
+    split_filename = filename_with_extension.split('.')
+    if len(split_filename) > 1:
+        dateiendung = split_filename[-1]
+    else:
+        dateiendung = "jpg"
+
+    #urllib.request.urlretrieve(url, output_directory+"Cover."+dateiendung)
+    response = requests.get(url)
+    if response.status_code == 200:
+        with open(output_directory+"Cover."+dateiendung, 'wb') as f:
+            f.write(response.content)
+    else:
+        url= results["results"][1]['image']
+        if response.status_code == 200:
+            with open(output_directory+"Cover."+dateiendung, 'wb') as f:
+                f.write(response.content)
+
+
 
 def select_input_folder():
     input_folder_path = filedialog.askdirectory()
     input_folder_entry.delete(0, tk.END)
     input_folder_entry.insert(0, input_folder_path)
 
-def select_output_folder():
-    output_folder_path = filedialog.askdirectory()
-    output_folder_entry.delete(0, tk.END)
-    output_folder_entry.insert(0, output_folder_path)
+
 
 def strip_subfolders():
     input_path = input_folder_entry.get()
@@ -129,6 +160,18 @@ def create_subfolders():
                 log_output.insert(tk.END,f"Error moving {file_path}: Tags not found")
     log_output.insert(tk.END, "\nSubfolders created successfully.\n")
 
+def generate_thumbnails():
+    input_path = input_folder_entry.get()
+    log_output.insert(tk.END, f"Generating thumbnails for folders in '{input_path}'...\n")
+   
+    for root, dirs, files in os.walk(input_path):
+        for folder in dirs:
+            folder_path = os.path.join(root, folder)
+            current_folder_name = os.path.basename(folder_path)
+            log_output.insert(tk.END, f"Generating thumbnails for folder '{current_folder_name}' with path '{folder_path}'...\n")
+            googleImgDownload(current_folder_name, folder_path+"\\", "Cover.jpg")
+    log_output.insert(tk.END, f"Finished generating thumbnails for folders in '{input_path}'...\n")
+
 
 # GUI creation
 root = tk.Tk()
@@ -145,7 +188,7 @@ input_folder_button = tk.Button(root, text="Select Folder", command=select_input
 input_folder_button.pack()
 
 # Output format
-output_format_label = tk.Label(root, text="Output Format:")
+output_format_label = tk.Label(root, text="Output Format: <not editable>")
 output_format_label.pack()
 
 output_format_entry = tk.Entry(root, width=50)
@@ -159,6 +202,10 @@ strip_subfolders_button.pack()
 # Create Subfolders button
 create_subfolders_button = tk.Button(root, text="Create Subfolders", command=create_subfolders)
 create_subfolders_button.pack()
+
+# Generate Thumbnails button
+generate_thumbnails_button = tk.Button(root, text="Generate Thumbnails <alpha>", command=generate_thumbnails)
+generate_thumbnails_button.pack()
 
 # Log output
 log_output = tk.Text(root, height=20, width=100)

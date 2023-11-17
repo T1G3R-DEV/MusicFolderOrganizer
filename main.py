@@ -80,6 +80,9 @@ def select_input_folder():
 
 def strip_subfolders():
     input_path = input_folder_entry.get()
+    confirmation = tk.messagebox.askyesno("Confirmation", "Are you sure you want to strip subfolders? Tis will delete all folders within " + input_path + "! All the containing files should be moved to the most outer folder but a backup is still recommended!")
+
+    input_path = input_folder_entry.get()
     #output_format = output_format_entry.get()
 
     # Strip subfolders logic here
